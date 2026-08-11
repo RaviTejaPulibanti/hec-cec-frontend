@@ -35,5 +35,5 @@ export interface Question {
   marks: number;
   negativeMarks: number;
   subject: string;
-  examId?: string;
+  examId?: any;
 }
