@@ -70,7 +70,12 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
   const onSubmit = async (data: EditExamForm) => {
     setError("");
     try {
-      await api.put(`/exam/${id}`, data);
+      const payload = {
+        ...data,
+        startTime: new Date(data.startTime).toISOString(),
+        endTime: new Date(data.endTime).toISOString(),
+      };
+      await api.put(`/exam/${id}`, payload);
       router.push("/admin/exams");
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to update exam");

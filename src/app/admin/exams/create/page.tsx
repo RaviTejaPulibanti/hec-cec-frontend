@@ -34,7 +34,12 @@ export default function CreateExamPage() {
   const onSubmit = async (data: CreateExamForm) => {
     setError("");
     try {
-      await api.post("/exam", data);
+      const payload = {
+        ...data,
+        startTime: new Date(data.startTime).toISOString(),
+        endTime: new Date(data.endTime).toISOString(),
+      };
+      await api.post("/exam", payload);
       router.push("/admin/exams");
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to create exam");
