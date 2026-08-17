@@ -1,20 +1,28 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { api } from "@/lib/axios";
-import { Question } from "@/types";
+import { Question, Exam } from "@/types";
 import { Button } from "@/components/ui/Button";
-import { Plus, Edit2, Trash2 } from "lucide-react";
+import { Plus, Edit2, Trash2, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function QuestionsPage() {
   const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Bulk Upload State
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [selectedExamId, setSelectedExamId] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchQuestions();
+    fetchExams();
   }, []);
 
   const fetchQuestions = async () => {
@@ -25,6 +33,15 @@ export default function QuestionsPage() {
       console.error("Failed to fetch questions", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchExams = async () => {
+    try {
+      const response = await api.get("/exam");
+      setExams(response.data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch exams", error);
     }
   };
 
@@ -39,19 +56,116 @@ export default function QuestionsPage() {
     }
   };
 
+  const handleBulkUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedExamId) {
+      alert("Please select an exam first.");
+      return;
+    }
+    
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
+      alert("Please select a JSON file to upload.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const text = await file.text();
+      const parsedQuestions = JSON.parse(text);
+
+      if (!Array.isArray(parsedQuestions)) {
+        throw new Error("JSON file must contain an array of questions.");
+      }
+
+      await api.post("/questions/bulk", {
+        examId: selectedExamId,
+        questions: parsedQuestions
+      });
+
+      alert(`Successfully uploaded ${parsedQuestions.length} questions!`);
+      setIsBulkUploadOpen(false);
+      setSelectedExamId("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      fetchQuestions();
+    } catch (error: any) {
+      console.error("Bulk upload failed", error);
+      alert("Upload failed: " + (error.response?.data?.message || error.message));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 relative">
+      {/* Bulk Upload Modal */}
+      {isBulkUploadOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-slate-900">Bulk Upload JSON</h2>
+              <button onClick={() => setIsBulkUploadOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleBulkUpload} className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">Select Exam</label>
+                <select
+                  required
+                  value={selectedExamId}
+                  onChange={(e) => setSelectedExamId(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 outline-none transition-all focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                >
+                  <option value="" className="text-slate-500">-- Choose an Exam --</option>
+                  {exams.map(exam => (
+                    <option key={exam._id} value={exam._id} className="text-slate-900">{exam.title}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">JSON File</label>
+                <input
+                  type="file"
+                  accept=".json"
+                  required
+                  ref={fileInputRef}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 outline-none transition-all"
+                />
+              </div>
+              
+              <div className="pt-4 flex gap-3">
+                <Button variant="outline" type="button" className="flex-1" onClick={() => setIsBulkUploadOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" className="flex-1" isLoading={uploading}>
+                  Upload
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Questions Bank</h1>
           <p className="mt-2 text-slate-500">Manage all questions for your exams.</p>
         </div>
-        <Link href="/admin/questions/create">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Question
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => setIsBulkUploadOpen(true)}>
+            <Upload className="mr-2 h-4 w-4" />
+            Bulk Upload
           </Button>
-        </Link>
+          <Link href="/admin/questions/create">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Question
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">

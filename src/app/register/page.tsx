@@ -15,7 +15,7 @@ import Image from "next/image";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name is required"),
-  email: z.string().email("Invalid email address"),
+  email: z.string().regex(/^s\d{6}@rguktsklm\.ac\.in$/i, "only college emails are allowed"),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
@@ -83,7 +83,7 @@ export default function RegisterPage() {
             <Input
               label="Email Address"
               type="email"
-              placeholder="you@example.com"
+              placeholder="s220001@rguktsklm.ac.in"
               icon={<Mail className="h-5 w-5" />}
               error={errors.email?.message}
               {...register("email")}

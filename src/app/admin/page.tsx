@@ -8,7 +8,7 @@ export default function AdminDashboardPage() {
   const [statsData, setStatsData] = useState({
     totalExams: 0,
     totalStudents: 0,
-    totalResults: 0
+    activeExams: 0
   });
   
   const [recentResults, setRecentResults] = useState([]);
@@ -35,7 +35,7 @@ export default function AdminDashboardPage() {
   const stats = [
     { name: "Total Exams", value: statsData.totalExams, icon: FileText, color: "text-blue-600", bg: "bg-blue-100" },
     { name: "Active Students", value: statsData.totalStudents, icon: Users, color: "text-indigo-600", bg: "bg-indigo-100" },
-    { name: "Completed Exams", value: statsData.totalResults, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-100" },
+    { name: "Active Exams", value: statsData.activeExams, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-100" },
   ];
 
   return (

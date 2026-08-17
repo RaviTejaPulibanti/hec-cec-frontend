@@ -10,7 +10,12 @@ import {
   ListTodo,
   LogOut,
   GraduationCap,
-  Users
+  Users,
+  User,
+  RefreshCw,
+  Trophy,
+  Megaphone,
+  BarChart3
 } from "lucide-react";
 import { UserRole } from "@/types";
 
@@ -32,12 +37,16 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     ? [
         { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
         { name: "Exams", href: "/admin/exams", icon: FileText },
+        { name: "Exams Analysis", href: "/admin/analysis", icon: BarChart3 },
         { name: "Questions", href: "/admin/questions", icon: ListTodo },
         { name: "Users", href: "/admin/users", icon: Users },
+        { name: "Announcements", href: "/admin/announcements", icon: Megaphone },
       ]
     : [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+        { name: "Exam Leaderboard", href: "/dashboard/leaderboard", icon: Trophy },
         { name: "My Results", href: "/dashboard/results", icon: GraduationCap },
+        { name: "Profile", href: "/dashboard/profile", icon: User },
       ];
 
   const handleLogout = () => {

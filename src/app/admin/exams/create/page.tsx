@@ -11,7 +11,7 @@ import { api } from "@/lib/axios";
 
 const createExamSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  duration: z.coerce.number().min(5, "Duration must be at least 5 minutes"),
+  duration: z.coerce.number().min(1, "Duration must be at least 1 minute"),
   totalQuestions: z.coerce.number().min(1, "At least 1 question is required"),
   startTime: z.string().nonempty("Start time is required"),
   endTime: z.string().nonempty("End time is required"),

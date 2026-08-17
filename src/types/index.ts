@@ -8,6 +8,9 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  branch?: string;
+  year?: string;
+  studentClass?: string;
 }
 
 export interface AuthResponse {

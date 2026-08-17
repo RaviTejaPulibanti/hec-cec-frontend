@@ -20,6 +20,95 @@ export default function ExamInterfacePage() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  
+  const answersRef = React.useRef(answers);
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  const isSubmittingRef = React.useRef(false);
+
+  const handleSubmitExam = async () => {
+    if (isSubmittingRef.current || isFinished) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+    
+    try {
+      // API call to submit results
+      const formattedAnswers = Object.entries(answersRef.current).map(([questionId, optionIdx]) => ({
+        question: questionId,
+        selectedOption: optionIdx,
+      }));
+      
+      const allowedDurationSeconds = exam ? exam.duration * 60 : 0;
+      const timeTaken = Math.max(0, allowedDurationSeconds - timeLeft);
+      
+      await api.post(`/student/exams/${id}/submit`, { answers: formattedAnswers, timeTaken });
+      
+      // Clear saved progress
+      localStorage.removeItem(`exam_${id}_answers`);
+      localStorage.removeItem(`exam_${id}_currentIdx`);
+      localStorage.removeItem(`exam_${id}_endTime`);
+      
+      setIsFinished(true);
+    } catch (error: any) {
+      console.error("Submit failed", error);
+      if (error.response && error.response.status === 400 && error.response.data?.message?.includes("already submitted")) {
+        // Exam was already submitted (e.g. by a background blur event before reload)
+        localStorage.removeItem(`exam_${id}_answers`);
+        localStorage.removeItem(`exam_${id}_currentIdx`);
+        localStorage.removeItem(`exam_${id}_endTime`);
+        setIsFinished(true);
+      } else if (error.response && error.response.status === 500 && error.response.data?.message?.includes("E11000")) {
+        // Handle MongoDB duplicate key error silently
+        localStorage.removeItem(`exam_${id}_answers`);
+        localStorage.removeItem(`exam_${id}_currentIdx`);
+        localStorage.removeItem(`exam_${id}_endTime`);
+        setIsFinished(true);
+      } else {
+        alert(error.response?.data?.message || "Failed to submit exam. Please try again.");
+        isSubmittingRef.current = false;
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  const [submittedDueToViolation, setSubmittedDueToViolation] = useState(false);
+
+  useEffect(() => {
+    if (isFinished || isSubmitting) return;
+
+    // Prevent accidental reload/leave
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+
+    // Detect focus loss (tab switching, alt-tab, clicking outside)
+    const handleBlur = () => {
+      setSubmittedDueToViolation(true);
+      handleSubmitExam();
+    };
+
+    // Prevent back navigation
+    const handlePopState = (e: PopStateEvent) => {
+      history.pushState(null, "", window.location.href);
+      setSubmittedDueToViolation(true);
+      handleSubmitExam();
+    };
+
+    history.pushState(null, "", window.location.href);
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isFinished, isSubmitting]);
 
   useEffect(() => {
     fetchExamDetails();
@@ -74,7 +163,17 @@ export default function ExamInterfacePage() {
       const secondsUntilEnd = Math.max(0, Math.floor((endTime - now) / 1000));
       const allowedDurationSeconds = fetchedExam.duration * 60;
       
-      setTimeLeft(Math.min(allowedDurationSeconds, secondsUntilEnd));
+      let savedEndTime = localStorage.getItem(`exam_${id}_endTime`);
+      let finalSecondsLeft = 0;
+      
+      if (savedEndTime) {
+        finalSecondsLeft = Math.max(0, Math.floor((parseInt(savedEndTime) - now) / 1000));
+      } else {
+        finalSecondsLeft = Math.min(allowedDurationSeconds, secondsUntilEnd);
+        localStorage.setItem(`exam_${id}_endTime`, (now + finalSecondsLeft * 1000).toString());
+      }
+      
+      setTimeLeft(finalSecondsLeft);
     } catch (error) {
       console.error("Failed to load exam", error);
     } finally {
@@ -86,28 +185,7 @@ export default function ExamInterfacePage() {
     setAnswers({ ...answers, [questionId]: optionIdx });
   };
 
-  const handleSubmitExam = async () => {
-    setIsSubmitting(true);
-    try {
-      // API call to submit results
-      const formattedAnswers = Object.entries(answers).map(([questionId, optionIdx]) => ({
-        question: questionId,
-        selectedOption: optionIdx,
-      }));
-      
-      await api.post(`/student/exams/${id}/submit`, { answers: formattedAnswers });
-      
-      // Clear saved progress
-      localStorage.removeItem(`exam_${id}_answers`);
-      localStorage.removeItem(`exam_${id}_currentIdx`);
-      
-      setIsFinished(true);
-    } catch (error) {
-      console.error("Submit failed", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -123,9 +201,22 @@ export default function ExamInterfacePage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
         <div className="w-full max-w-md text-center rounded-2xl bg-white p-8 shadow-xl">
-          <CheckCircle2 className="mx-auto mb-4 h-16 w-16 text-emerald-500" />
-          <h2 className="text-2xl font-bold text-slate-900">Exam Submitted!</h2>
-          <p className="mt-2 text-slate-500">Your results have been recorded successfully.</p>
+          {submittedDueToViolation ? (
+            <>
+              <AlertTriangle className="mx-auto mb-4 h-16 w-16 text-red-500" />
+              <h2 className="text-2xl font-bold text-red-600">Exam Auto-Submitted!</h2>
+              <p className="mt-2 text-slate-600 font-medium">
+                Your exam was automatically submitted because you switched tabs, lost focus, or attempted to navigate away.
+              </p>
+              <p className="mt-2 text-sm text-slate-500">This action is strictly prohibited during the exam.</p>
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="mx-auto mb-4 h-16 w-16 text-emerald-500" />
+              <h2 className="text-2xl font-bold text-slate-900">Exam Submitted!</h2>
+              <p className="mt-2 text-slate-500">Your results have been recorded successfully.</p>
+            </>
+          )}
           <Button className="mt-8 w-full" onClick={() => router.push("/dashboard/results")}>
             View Results
           </Button>
@@ -141,7 +232,7 @@ export default function ExamInterfacePage() {
   const currentQ = questions[currentQuestionIdx];
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
+    <div className="flex min-h-screen flex-col bg-slate-50 relative">
       {/* Header */}
       <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
         <div>
