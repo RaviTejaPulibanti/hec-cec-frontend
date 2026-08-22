@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { api } from "@/lib/axios";
 import { Exam, Question } from "@/types";
 import { Button } from "@/components/ui/Button";
-import { Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Input } from "@/components/ui/Input";
+import { Clock, AlertTriangle, CheckCircle2, KeyRound, ShieldCheck } from "lucide-react";
 
 export default function ExamInterfacePage() {
   const { id } = useParams();
@@ -20,6 +21,10 @@ export default function ExamInterfacePage() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  const [securityCode, setSecurityCode] = useState("");
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationError, setVerificationError] = useState("");
   
   const answersRef = React.useRef(answers);
   useEffect(() => {
@@ -43,7 +48,9 @@ export default function ExamInterfacePage() {
       const allowedDurationSeconds = exam ? exam.duration * 60 : 0;
       const timeTaken = Math.max(0, allowedDurationSeconds - timeLeft);
       
-      await api.post(`/student/exams/${id}/submit`, { answers: formattedAnswers, timeTaken });
+      await api.post(`/student/exams/${id}/submit`, { answers: formattedAnswers, timeTaken }, {
+        headers: { "x-exam-access-token": accessToken },
+      });
       
       // Clear saved progress
       localStorage.removeItem(`exam_${id}_answers`);
@@ -76,7 +83,7 @@ export default function ExamInterfacePage() {
   const [submittedDueToViolation, setSubmittedDueToViolation] = useState(false);
 
   useEffect(() => {
-    if (isFinished || isSubmitting) return;
+    if (!accessToken || isFinished || isSubmitting) return;
 
     // Prevent accidental reload/leave
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -111,7 +118,13 @@ export default function ExamInterfacePage() {
   }, [isFinished, isSubmitting]);
 
   useEffect(() => {
-    fetchExamDetails();
+    const savedAccessToken = localStorage.getItem(`exam_${id}_accessToken`);
+    if (savedAccessToken) {
+      setAccessToken(savedAccessToken);
+      fetchExamDetails(savedAccessToken);
+    } else {
+      setLoading(false);
+    }
     
     // Load saved progress from localStorage
     const savedAnswers = localStorage.getItem(`exam_${id}_answers`);
@@ -150,9 +163,11 @@ export default function ExamInterfacePage() {
     }
   }, [exam, timeLeft, isFinished]);
 
-  const fetchExamDetails = async () => {
+  const fetchExamDetails = async (token: string) => {
     try {
-      const response = await api.get(`/student/exams/${id}`);
+      const response = await api.get(`/student/exams/${id}`, {
+        headers: { "x-exam-access-token": token },
+      });
       const fetchedExam = response.data.data;
       setExam(fetchedExam);
       
@@ -176,8 +191,28 @@ export default function ExamInterfacePage() {
       setTimeLeft(finalSecondsLeft);
     } catch (error) {
       console.error("Failed to load exam", error);
+      localStorage.removeItem(`exam_${id}_accessToken`);
+      setAccessToken(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsVerifying(true);
+    setVerificationError("");
+
+    try {
+      const response = await api.post(`/student/exams/${id}/verify-code`, { securityCode });
+      const token = response.data.data.accessToken as string;
+      localStorage.setItem(`exam_${id}_accessToken`, token);
+      setAccessToken(token);
+      await fetchExamDetails(token);
+    } catch (error: any) {
+      setVerificationError(error.response?.data?.message || "Unable to verify the security code");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -195,6 +230,35 @@ export default function ExamInterfacePage() {
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center">Loading exam...</div>;
+  }
+
+  if (!accessToken) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+        <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl ring-1 ring-slate-100">
+          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+            <ShieldCheck className="h-7 w-7" />
+          </div>
+          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-indigo-600">Secure exam access</p>
+          <h1 className="text-2xl font-bold text-slate-900">Enter your security code</h1>
+          <p className="mt-2 text-slate-500">Verify the code provided for this exam to continue.</p>
+          <form onSubmit={handleVerifyCode} className="mt-6 space-y-4">
+            <Input
+              label="Security code"
+              type="password"
+              autoComplete="off"
+              value={securityCode}
+              onChange={(event) => setSecurityCode(event.target.value)}
+              icon={<KeyRound className="h-4 w-4" />}
+              error={verificationError}
+            />
+            <Button type="submit" className="w-full" isLoading={isVerifying} disabled={!securityCode.trim()}>
+              Verify and start exam
+            </Button>
+          </form>
+        </div>
+      </div>
+    );
   }
 
   if (isFinished) {

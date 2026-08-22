@@ -15,6 +15,7 @@ const createExamSchema = z.object({
   totalQuestions: z.coerce.number().min(1, "At least 1 question is required"),
   startTime: z.string().nonempty("Start time is required"),
   endTime: z.string().nonempty("End time is required"),
+  securityCode: z.string().min(4, "Security code must be at least 4 characters"),
 });
 
 type CreateExamForm = z.infer<typeof createExamSchema>;
@@ -99,6 +100,14 @@ export default function CreateExamPage() {
               {...register("endTime")}
             />
           </div>
+
+          <Input
+            label="Security Code"
+            type="password"
+            placeholder="Enter the code students must know"
+            error={errors.securityCode?.message}
+            {...register("securityCode")}
+          />
 
           <div className="flex justify-end gap-4 pt-4">
             <Button

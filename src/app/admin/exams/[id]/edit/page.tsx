@@ -15,6 +15,7 @@ const editExamSchema = z.object({
   totalQuestions: z.coerce.number().min(1, "At least 1 question is required"),
   startTime: z.string().nonempty("Start time is required"),
   endTime: z.string().nonempty("End time is required"),
+  securityCode: z.string().min(4, "Security code must be at least 4 characters").optional().or(z.literal("")),
 });
 
 type EditExamForm = z.infer<typeof editExamSchema>;
@@ -56,6 +57,7 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
           totalQuestions: exam.totalQuestions,
           startTime: formatDateTime(exam.startTime),
           endTime: formatDateTime(exam.endTime),
+          securityCode: "",
         });
       } catch (err: any) {
         console.error(err);
@@ -143,6 +145,14 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
               {...register("endTime")}
             />
           </div>
+
+          <Input
+            label="Security Code"
+            type="password"
+            placeholder="Leave blank to keep the current code"
+            error={errors.securityCode?.message}
+            {...register("securityCode")}
+          />
 
           <div className="flex justify-end gap-4 pt-4">
             <Button
