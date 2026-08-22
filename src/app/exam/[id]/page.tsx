@@ -206,10 +206,20 @@ export default function ExamInterfacePage() {
     try {
       const response = await api.post(`/student/exams/${id}/verify-code`, { securityCode });
       const token = response.data.data.accessToken as string;
+      if(token == null){
+        alert("Invalid Code");
+        router.replace("/dashboard");
+        return;
+      }
       localStorage.setItem(`exam_${id}_accessToken`, token);
       setAccessToken(token);
       await fetchExamDetails(token);
     } catch (error: any) {
+      if (error.response?.data?.message === "Invalid security code") {
+        alert("Invalid Code");
+        router.replace("/dashboard");
+        return;
+      }
       setVerificationError(error.response?.data?.message || "Unable to verify the security code");
     } finally {
       setIsVerifying(false);
