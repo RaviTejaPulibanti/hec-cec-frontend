@@ -13,8 +13,7 @@ const createExamSchema = z.object({
   title: z.string().min(1, "Title is required"),
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute"),
   totalQuestions: z.coerce.number().min(1, "At least 1 question is required"),
-  startTime: z.string().nonempty("Start time is required"),
-  endTime: z.string().nonempty("End time is required"),
+  examDate: z.string().nonempty("Exam date is required"),
   securityCode: z.string().min(4, "Security code must be at least 4 characters"),
 });
 
@@ -35,12 +34,7 @@ export default function CreateExamPage() {
   const onSubmit = async (data: CreateExamForm) => {
     setError("");
     try {
-      const payload = {
-        ...data,
-        startTime: new Date(data.startTime).toISOString(),
-        endTime: new Date(data.endTime).toISOString(),
-      };
-      await api.post("/exam", payload);
+      await api.post("/exam", data);
       router.push("/admin/exams");
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to create exam");
@@ -86,20 +80,12 @@ export default function CreateExamPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <Input
-              label="Start Time"
-              type="datetime-local"
-              error={errors.startTime?.message}
-              {...register("startTime")}
-            />
-            <Input
-              label="End Time"
-              type="datetime-local"
-              error={errors.endTime?.message}
-              {...register("endTime")}
-            />
-          </div>
+          <Input
+            label="Exam Date"
+            type="date"
+            error={errors.examDate?.message}
+            {...register("examDate")}
+          />
 
           <Input
             label="Security Code"

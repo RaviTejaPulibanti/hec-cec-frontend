@@ -219,8 +219,8 @@ export default function StudentDashboardPage() {
                         <div className="mt-4 space-y-2">
                           <div className="flex items-center text-sm font-medium text-indigo-600">
                             <Clock className="mr-2 h-4 w-4" />
-                            Starts: {new Date(exam.startTime).toLocaleString(undefined, {
-                              month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+                            Exam date: {exam.examDate || new Date(exam.startTime).toLocaleDateString(undefined, {
+                              month: 'short', day: 'numeric', year: 'numeric'
                             })}
                           </div>
                           <div className="flex items-center text-sm text-slate-600">

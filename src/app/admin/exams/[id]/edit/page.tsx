@@ -13,8 +13,7 @@ const editExamSchema = z.object({
   title: z.string().min(1, "Title is required"),
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute"),
   totalQuestions: z.coerce.number().min(1, "At least 1 question is required"),
-  startTime: z.string().nonempty("Start time is required"),
-  endTime: z.string().nonempty("End time is required"),
+  examDate: z.string().nonempty("Exam date is required"),
   securityCode: z.string().min(4, "Security code must be at least 4 characters").optional().or(z.literal("")),
 });
 
@@ -43,20 +42,11 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
         const response = await api.get(`/exam/${id}`);
         const exam = response.data.data;
         
-        // Format dates for datetime-local input
-        const formatDateTime = (dateString: string) => {
-          if (!dateString) return "";
-          const d = new Date(dateString);
-          // Format as YYYY-MM-DDThh:mm
-          return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-        };
-
         reset({
           title: exam.title,
           duration: exam.duration,
           totalQuestions: exam.totalQuestions,
-          startTime: formatDateTime(exam.startTime),
-          endTime: formatDateTime(exam.endTime),
+          examDate: exam.examDate || new Date(exam.startTime).toISOString().slice(0, 10),
           securityCode: "",
         });
       } catch (err: any) {
@@ -72,12 +62,7 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
   const onSubmit = async (data: EditExamForm) => {
     setError("");
     try {
-      const payload = {
-        ...data,
-        startTime: new Date(data.startTime).toISOString(),
-        endTime: new Date(data.endTime).toISOString(),
-      };
-      await api.put(`/exam/${id}`, payload);
+      await api.put(`/exam/${id}`, data);
       router.push("/admin/exams");
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to update exam");
@@ -131,20 +116,12 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <Input
-              label="Start Time"
-              type="datetime-local"
-              error={errors.startTime?.message}
-              {...register("startTime")}
-            />
-            <Input
-              label="End Time"
-              type="datetime-local"
-              error={errors.endTime?.message}
-              {...register("endTime")}
-            />
-          </div>
+          <Input
+            label="Exam Date"
+            type="date"
+            error={errors.examDate?.message}
+            {...register("examDate")}
+          />
 
           <Input
             label="Security Code"
