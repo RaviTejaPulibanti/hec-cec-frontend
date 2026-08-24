@@ -86,6 +86,26 @@ export default function ResultsPage() {
     }
   };
 
+  const progressSummary = results.reduce(
+    (summary, result) => {
+      const totalMarks = Number(result.totalMarks) || 0;
+      const score = Number(result.score) || 0;
+
+      return {
+        earnedMarks: summary.earnedMarks + score,
+        totalMarks: summary.totalMarks + totalMarks,
+        correctAnswers: summary.correctAnswers + (Number(result.correctAnswers) || 0),
+        wrongAnswers: summary.wrongAnswers + (Number(result.wrongAnswers) || 0),
+        unattempted: summary.unattempted + (Number(result.unattempted) || 0),
+      };
+    },
+    { earnedMarks: 0, totalMarks: 0, correctAnswers: 0, wrongAnswers: 0, unattempted: 0 }
+  );
+  const progressPercentage = progressSummary.totalMarks > 0
+    ? Math.max(0, Math.min(100, Math.round((progressSummary.earnedMarks / progressSummary.totalMarks) * 100)))
+    : 0;
+  const progressRing = `${progressPercentage} ${100 - progressPercentage}`;
+
   return (
     <div className="space-y-8 relative">
       {/* Detailed Result Modal */}
@@ -286,7 +306,7 @@ export default function ResultsPage() {
         <p className="mt-2 text-slate-500">Track your performance and past exam scores.</p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <div className="flex items-center gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 flex-shrink-0">
             <Award className="h-6 w-6" />
@@ -309,6 +329,33 @@ export default function ResultsPage() {
                     return `${highest.score} / ${highest.totalMarks}`;
                   })()
                 : "--"}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 sm:col-span-2 lg:col-span-1">
+          <div className="relative h-24 w-24 shrink-0">
+            <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36" aria-label={`${progressPercentage}% overall progress`} role="img">
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" strokeWidth="3" className="text-slate-100" />
+              <circle
+                cx="18"
+                cy="18"
+                r="15.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                pathLength="100"
+                strokeDasharray={progressRing}
+                className="text-emerald-500 transition-all duration-700"
+              />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-slate-900">{progressPercentage}%</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-slate-500">Overall Progress</p>
+            <p className="mt-1 text-sm font-semibold text-slate-900">{progressSummary.correctAnswers} correct answers</p>
+            <p className="mt-1 text-xs text-slate-500">
+              {progressSummary.wrongAnswers} wrong · {progressSummary.unattempted} unattempted
             </p>
           </div>
         </div>
