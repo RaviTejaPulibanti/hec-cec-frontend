@@ -25,6 +25,7 @@ export interface Exam {
   duration: number; // in minutes
   totalQuestions: number;
   examDate?: string;
+  endDate?: string;
   startTime: string;
   endTime: string;
   status: "DRAFT" | "PUBLISHED" | "COMPLETED";

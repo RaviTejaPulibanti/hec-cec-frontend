@@ -7,7 +7,6 @@ import { useAuthStore } from "@/store/useAuthStore";
 import {
   LayoutDashboard,
   FileText,
-  ListTodo,
   LogOut,
   GraduationCap,
   Users,
@@ -38,7 +37,6 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
         { name: "Exams", href: "/admin/exams", icon: FileText },
         { name: "Exams Analysis", href: "/admin/analysis", icon: BarChart3 },
-        { name: "Questions", href: "/admin/questions", icon: ListTodo },
         { name: "Users", href: "/admin/users", icon: Users },
         { name: "Announcements", href: "/admin/announcements", icon: Megaphone },
       ]
@@ -55,15 +53,15 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   };
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r border-slate-200 bg-white">
-      <div className="flex h-16 items-center px-6">
-        <div className="flex items-center gap-2 font-bold text-indigo-600 text-xl tracking-tight">
+    <div className="flex h-screen w-64 flex-col border-r border-[#dce5e7] bg-white">
+      <div className="flex h-16 items-center border-b border-[#dce5e7] px-6">
+        <div className="flex items-center gap-2 font-bold text-[#176d6a] text-xl tracking-tight">
           <img src="/logo.png" alt="HEC Exam Logo" className="h-8 w-auto object-contain" />
           HEC
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-4">
+      <div className="flex-1 overflow-y-auto py-5">
         <nav className="space-y-1 px-3">
           {links.map((link) => {
             const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
@@ -76,13 +74,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 onClick={onNavigate}
                 className={`group flex items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    ? "bg-[#e2f2ef] text-[#176d6a] shadow-sm"
+                    : "text-[#557078] hover:bg-[#eef5f5] hover:text-[#172f36]"
                 }`}
               >
                 <Icon
                   className={`mr-3 h-5 w-5 flex-shrink-0 transition-colors ${
-                    isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"
+                    isActive ? "text-[#176d6a]" : "text-[#8aa0a5] group-hover:text-[#36545b]"
                   }`}
                 />
                 {link.name}
@@ -92,14 +90,14 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </nav>
       </div>
 
-      <div className="border-t border-slate-200 p-4">
+      <div className="border-t border-[#dce5e7] p-4">
         <div className="mb-4 flex items-center gap-3 px-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 font-bold flex-shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d4f0eb] text-[#176d6a] font-bold flex-shrink-0">
             {user.name.charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-sm font-medium text-slate-900 truncate">{user.name}</span>
-            <span className="text-xs text-slate-500 capitalize truncate">{user.role.toLowerCase()}</span>
+            <span className="text-sm font-medium text-[#172f36] truncate">{user.name}</span>
+            <span className="text-xs text-[#71858a] capitalize truncate">{user.role.toLowerCase()}</span>
           </div>
         </div>
         <button

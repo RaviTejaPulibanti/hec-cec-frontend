@@ -373,10 +373,17 @@ export default function ExamInterfacePage() {
               Previous
             </Button>
             <Button
-              disabled={currentQuestionIdx === questions.length - 1}
-              onClick={() => setCurrentQuestionIdx(prev => prev + 1)}
+              disabled={isSubmitting}
+              onClick={() => {
+                if (currentQuestionIdx === questions.length - 1) {
+                  handleSubmitExam();
+                  return;
+                }
+
+                setCurrentQuestionIdx(prev => prev + 1);
+              }}
             >
-              Next
+              {currentQuestionIdx === questions.length - 1 ? "Submit Exam" : "Next"}
             </Button>
           </div>
         </div>

@@ -14,6 +14,7 @@ const editExamSchema = z.object({
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute"),
   totalQuestions: z.coerce.number().min(1, "At least 1 question is required"),
   examDate: z.string().nonempty("Exam date is required"),
+  endDate: z.string().nonempty("End date is required"),
   securityCode: z.string().min(4, "Security code must be at least 4 characters").optional().or(z.literal("")),
 });
 
@@ -47,6 +48,7 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
           duration: exam.duration,
           totalQuestions: exam.totalQuestions,
           examDate: exam.examDate || new Date(exam.startTime).toISOString().slice(0, 10),
+          endDate: exam.endDate || new Date(exam.endTime).toISOString().slice(0, 10),
           securityCode: "",
         });
       } catch (err: any) {
@@ -121,6 +123,13 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
             type="date"
             error={errors.examDate?.message}
             {...register("examDate")}
+          />
+
+          <Input
+            label="End Date"
+            type="date"
+            error={errors.endDate?.message}
+            {...register("endDate")}
           />
 
           <Input

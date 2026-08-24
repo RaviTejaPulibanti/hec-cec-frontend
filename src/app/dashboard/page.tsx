@@ -212,7 +212,7 @@ export default function StudentDashboardPage() {
                     >
                       <div>
                         <div className="mb-4 inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
-                          Upcoming
+                          {exam.status === "DRAFT" ? "Draft" : "Upcoming"}
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 line-clamp-1">{exam.title}</h3>
                         
