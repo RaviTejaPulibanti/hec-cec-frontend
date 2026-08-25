@@ -369,19 +369,20 @@ export default function ResultsPage() {
                 <th className="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Exam Title</th>
                 <th className="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Date Taken</th>
                 <th className="px-4 sm:px-6 py-4 font-semibold text-right whitespace-nowrap">Score</th>
+                <th className="px-4 sm:px-6 py-4 font-semibold text-center whitespace-nowrap">Performance</th>
                 <th className="px-4 sm:px-6 py-4 font-semibold text-right whitespace-nowrap">Review</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
                     Loading results...
                   </td>
                 </tr>
               ) : results.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
+                  <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
                     No results found. Take an exam to see your scores here.
                   </td>
                 </tr>
@@ -394,6 +395,36 @@ export default function ResultsPage() {
                       <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-600">
                         {result.score} / {result.totalMarks}
                       </span>
+                    </td>
+                    <td className="px-4 sm:px-6 py-4">
+                      {(() => {
+                        const score = Number(result.score) || 0;
+                        const totalMarks = Number(result.totalMarks) || 0;
+                        const performance = totalMarks > 0
+                          ? Math.max(0, Math.min(100, Math.round((score / totalMarks) * 100)))
+                          : 0;
+
+                        return (
+                          <div className="relative mx-auto h-12 w-12" role="img" aria-label={`${performance}% performance`}>
+                            <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
+                              <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" strokeWidth="3" className="text-slate-100" />
+                              <circle
+                                cx="18"
+                                cy="18"
+                                r="15.5"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                pathLength="100"
+                                strokeDasharray={`${performance} ${100 - performance}`}
+                                className="text-emerald-500 transition-all duration-700"
+                              />
+                            </svg>
+                            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-900">{performance}%</span>
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="px-4 sm:px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 flex-wrap sm:flex-nowrap">
