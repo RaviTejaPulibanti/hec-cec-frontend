@@ -14,7 +14,8 @@ import {
   RefreshCw,
   Trophy,
   Megaphone,
-  BarChart3
+  BarChart3,
+  ClipboardList
 } from "lucide-react";
 import { UserRole } from "@/types";
 
@@ -37,6 +38,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
         { name: "Exams", href: "/admin/exams", icon: FileText },
         { name: "Exams Analysis", href: "/admin/analysis", icon: BarChart3 },
+        { name: "Results", href: "/admin/results", icon: ClipboardList },
         { name: "Users", href: "/admin/users", icon: Users },
         { name: "Announcements", href: "/admin/announcements", icon: Megaphone },
       ]

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { User, Mail, ShieldCheck, Edit3, BookOpen, GraduationCap, Users } from "lucide-react";
+import { User, Mail, ShieldCheck, Edit3, BookOpen, GraduationCap, Users, CreditCard } from "lucide-react";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/Button";
 
@@ -92,6 +92,13 @@ export default function ProfilePage() {
               ) : (
                 <dd className="mt-2 text-base font-medium text-slate-900">{user.name}</dd>
               )}
+            </div>
+
+            <div className="sm:col-span-1">
+              <dt className="flex items-center gap-2 text-sm font-medium text-slate-500">
+                <CreditCard className="h-4 w-4" /> ID Number
+              </dt>
+              <dd className="mt-2 text-base font-medium text-slate-900">{user.idNumber || "Not set"}</dd>
             </div>
 
             <div className="sm:col-span-1">

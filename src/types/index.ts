@@ -8,6 +8,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  idNumber?: string;
   branch?: string;
   year?: string;
   studentClass?: string;
