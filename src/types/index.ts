@@ -11,6 +11,7 @@ export interface User {
   idNumber?: string;
   branch?: string;
   year?: string;
+  section?: string;
   studentClass?: string;
 }
 

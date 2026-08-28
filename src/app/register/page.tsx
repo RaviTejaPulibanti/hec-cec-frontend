@@ -7,7 +7,7 @@ import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Mail, Lock, User as UserIcon, AlertCircle, BookOpen, GraduationCap } from "lucide-react";
+import { Mail, Lock, User as UserIcon, AlertCircle, BookOpen, GraduationCap, Users } from "lucide-react";
 import { api } from "@/lib/axios";
 import { useAuthStore } from "@/store/useAuthStore";
 import Link from "next/link";
@@ -19,6 +19,7 @@ const registerSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
   branch: z.enum(["CSE", "AIML", "ECE", "EEE", "CIVIL", "MECH"], { message: "Select a branch" }),
   year: z.enum(["E1", "E2", "E3", "E4"], { message: "Select a year" }),
+  section: z.enum(["A", "B", "C", "D", "E"], { message: "Select a section" }),
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
@@ -116,6 +117,15 @@ export default function RegisterPage() {
                 {['E1', 'E2', 'E3', 'E4'].map((year) => <option key={year} value={year}>{year}</option>)}
               </select>
               {errors.year && <span className="mt-1 block text-xs text-red-600">{errors.year.message}</span>}
+            </label>
+
+            <label className="block text-sm font-medium text-slate-700">
+              <span className="mb-2 flex items-center gap-2"><Users className="h-5 w-5" /> Section</span>
+              <select className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900" {...register("section")}>
+                <option value="">Select Section</option>
+                {["A", "B", "C", "D", "E"].map((section) => <option key={section} value={section}>{section}</option>)}
+              </select>
+              {errors.section && <span className="mt-1 block text-xs text-red-600">{errors.section.message}</span>}
             </label>
 
             <Button type="submit" className="mt-6 w-full" isLoading={isSubmitting}>

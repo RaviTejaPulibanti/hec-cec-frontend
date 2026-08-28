@@ -14,6 +14,7 @@ interface AdminResult {
     idNumber?: string;
     branch?: string;
     year?: string;
+    section?: string;
   };
 }
 
@@ -101,23 +102,24 @@ export default function AdminResultsPage() {
 
       <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-sm text-slate-600">
+          <table className="w-full min-w-[860px] text-left text-sm text-slate-600">
             <thead className="bg-slate-50 text-slate-900">
               <tr>
                 <th className="px-6 py-4 font-semibold">Student Name</th>
                 <th className="px-6 py-4 font-semibold">ID Number</th>
                 <th className="px-6 py-4 font-semibold">Branch</th>
                 <th className="px-6 py-4 font-semibold">Year</th>
+                <th className="px-6 py-4 font-semibold">Section</th>
                 <th className="px-6 py-4 font-semibold text-right">Marks</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loadingResults ? (
-                <tr><td colSpan={5} className="px-6 py-10 text-center">Loading results...</td></tr>
+                <tr><td colSpan={6} className="px-6 py-10 text-center">Loading results...</td></tr>
               ) : !selectedExamId ? (
-                <tr><td colSpan={5} className="px-6 py-10 text-center text-slate-500">Select an exam to view student marks.</td></tr>
+                <tr><td colSpan={6} className="px-6 py-10 text-center text-slate-500">Select an exam to view student marks.</td></tr>
               ) : results.length === 0 ? (
-                <tr><td colSpan={5} className="px-6 py-10 text-center text-slate-500">No results submitted for this exam.</td></tr>
+                <tr><td colSpan={6} className="px-6 py-10 text-center text-slate-500">No results submitted for this exam.</td></tr>
               ) : (
                 results.map((result) => (
                   <tr key={result._id} className="transition-colors hover:bg-slate-50/60">
@@ -125,6 +127,7 @@ export default function AdminResultsPage() {
                     <td className="px-6 py-4">{result.student?.idNumber || "-"}</td>
                     <td className="px-6 py-4">{result.student?.branch || "-"}</td>
                     <td className="px-6 py-4">{result.student?.year || "-"}</td>
+                    <td className="px-6 py-4">{result.student?.section || "-"}</td>
                     <td className="px-6 py-4 text-right font-semibold text-[#176d6a]">
                       {result.score}{result.totalMarks ? ` / ${result.totalMarks}` : ""}
                     </td>
