@@ -3,6 +3,9 @@
 :root {
   --background: #f3f6f7;
   --foreground: #17252b;
+  --brand: #a14e40;
+  --brand-dark: #8a3f33;
+  --surface: #ffffff;
 }
 
 @theme inline {
@@ -12,12 +15,31 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 * {
   border-color: #dce5e7;
+  box-sizing: border-box;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+  }
 }

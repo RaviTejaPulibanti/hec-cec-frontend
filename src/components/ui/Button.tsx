@@ -9,14 +9,14 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = "", variant = "primary", size = "md", isLoading, children, ...props }, ref) => {
     const baseStyles =
-      "inline-flex items-center justify-center rounded-xl font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]";
+      "inline-flex items-center justify-center rounded-xl font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a14e40]/50 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]";
 
     const variants = {
-      primary: "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200",
-      secondary: "bg-slate-800 text-white hover:bg-slate-900 shadow-sm",
-      outline: "border-2 border-slate-200 bg-transparent hover:bg-slate-50 text-slate-900",
-      danger: "bg-red-500 text-white hover:bg-red-600 shadow-sm shadow-red-200",
-      ghost: "bg-transparent hover:bg-slate-100 text-slate-700",
+      primary: "bg-[#a14e40] text-white hover:bg-[#8a3f33] shadow-md shadow-[#a14e40]/20",
+      secondary: "bg-[#a14e40] text-white hover:bg-[#8a3f33] shadow-sm",
+      outline: "border-2 border-[#a14e40] bg-transparent hover:bg-[#a14e40]/10 text-[#a14e40]",
+      danger: "bg-[#a14e40] text-white hover:bg-[#8a3f33] shadow-sm shadow-[#a14e40]/20",
+      ghost: "bg-transparent hover:bg-[#a14e40]/10 text-[#a14e40]",
     };
 
     const sizes = {
