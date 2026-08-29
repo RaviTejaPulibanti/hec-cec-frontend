@@ -37,6 +37,7 @@ export interface Exam {
 export interface Question {
   _id: string;
   question: string;
+  imageUrl?: string;
   options: string[];
   correctAnswer: number;
   marks: number;

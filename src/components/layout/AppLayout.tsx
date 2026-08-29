@@ -36,7 +36,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-[#10252b]/60 md:hidden transition-opacity" 
+          className="fixed inset-0 z-40 bg-[#B22222]/45 md:hidden transition-opacity" 
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -50,30 +50,30 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-1 flex-col overflow-hidden relative">
         {/* Mobile header */}
-        <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-[#dce5e7] bg-[#f8fbfb] px-4 md:hidden">
+        <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-white/20 bg-[#5d817c] px-4 text-white md:hidden">
           <div className="flex items-center">
             <button 
               onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-2 text-[#557078] hover:bg-[#e7f1f1] focus:outline-none focus:ring-2 focus:ring-[#1b8c86]"
+              className="rounded-lg p-2 text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60"
             >
               <Menu className="h-6 w-6" />
             </button>
             <div className="ml-3 flex items-center gap-2">
               <Image src="/logo.png" alt="Logo" width={28} height={28} className="object-contain" priority />
-              <span className="font-bold text-[#176d6a] text-lg tracking-tight">HEC Portal</span>
+              <span className="font-bold text-white text-lg tracking-tight">HEC Portal</span>
             </div>
           </div>
           <div className="flex items-center gap-1">
             <button 
               onClick={() => window.location.reload()}
-              className="rounded-lg p-2 text-[#557078] hover:bg-[#e7f1f1] focus:outline-none focus:ring-2 focus:ring-[#1b8c86] transition-colors"
+              className="rounded-lg p-2 text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60 transition-colors"
               title="Refresh Page"
             >
               <RefreshCw className="h-5 w-5" />
             </button>
             <button 
               onClick={handleLogout}
-              className="rounded-lg p-2 text-slate-500 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+              className="rounded-lg p-2 text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/60 transition-colors"
               title="Sign Out"
             >
               <LogOut className="h-5 w-5" />
@@ -82,14 +82,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Desktop Header */}
-        <div className="hidden h-16 flex-shrink-0 items-center justify-between border-b border-[#dce5e7] bg-[#f8fbfb] px-8 md:flex">
+        <div className="hidden h-16 flex-shrink-0 items-center justify-between border-b border-white/20 bg-[#a14e40] px-8 text-white md:flex">
           <div className="flex items-center">
             {mounted && (
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#172f36]">
+                <span className="text-sm font-bold text-white">
                   Welcome back, {useAuthStore.getState().user?.name?.split(' ')[0] || "User"}
                 </span>
-                <span className="text-xs font-medium text-[#71858a]">
+                <span className="text-xs font-medium text-white/70">
                   {currentDate}
                 </span>
               </div>
@@ -97,7 +97,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
           <button
             onClick={() => window.location.reload()}
-            className="flex items-center gap-2 rounded-lg bg-[#f8fbfb] px-3 py-2 text-sm font-medium text-[#36545b] shadow-sm ring-1 ring-[#dce5e7] hover:bg-white transition-all hover:shadow-md"
+            className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-medium text-white shadow-sm ring-1 ring-white/20 hover:bg-white/20 transition-all hover:shadow-md"
             title="Refresh Page"
           >
             <RefreshCw className="h-4 w-4" />
@@ -105,8 +105,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">{children}</div>
+        <main className="flex-1 overflow-y-auto bg-[#f3f6f7]">
+          <div className="mx-auto min-h-full max-w-7xl bg-[#f3f6f7] px-4 py-6 md:px-8 md:py-8">{children}</div>
         </main>
       </div>
     </div>

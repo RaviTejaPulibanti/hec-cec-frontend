@@ -332,9 +332,21 @@ export default function ExamInterfacePage() {
             <div className="text-sm font-medium text-slate-500">Marks: {currentQ.marks} | Negative: -{currentQ.negativeMarks}</div>
           </div>
           
-          <div className="mb-8 text-lg text-slate-900 leading-relaxed">
+          <div className="mb-6 text-lg leading-relaxed text-slate-900">
             {currentQ.question}
           </div>
+
+          {currentQ.imageUrl ? (
+            <div className="mb-8 flex justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex max-w-3xl justify-center">
+                <img
+                  src={currentQ.imageUrl}
+                  alt="Question diagram"
+                  className="max-h-[460px] w-full rounded-xl object-contain shadow-sm"
+                />
+              </div>
+            </div>
+          ) : null}
 
           <div className="space-y-4">
             {currentQ.options.map((option, idx) => {
@@ -349,13 +361,13 @@ export default function ExamInterfacePage() {
                       : "border-slate-200 hover:border-indigo-300 hover:bg-slate-50"
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`flex h-6 w-6 items-center justify-center rounded-full border text-xs font-medium ${
+                  <div className="flex items-start gap-4">
+                    <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs font-medium ${
                       isSelected ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 text-slate-500"
                     }`}>
                       {String.fromCharCode(65 + idx)}
                     </div>
-                    <span className={`text-base ${isSelected ? "font-medium text-indigo-900" : "text-slate-700"}`}>
+                    <span className={`break-words text-base ${isSelected ? "font-medium text-indigo-900" : "text-slate-700"}`}>
                       {option}
                     </span>
                   </div>

@@ -11,6 +11,7 @@ import { api } from "@/lib/axios";
 
 const editQuestionSchema = z.object({
   question: z.string().min(5, "Question text is required"),
+  imageUrl: z.string().optional().or(z.literal("")),
   examId: z.string().min(1, "Exam is required"),
   options: z.array(z.string().min(1, "Option text cannot be empty")).length(4),
   correctAnswer: z.coerce.number().min(0).max(3),
@@ -27,14 +28,22 @@ export default function EditQuestionPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [exams, setExams] = useState<any[]>([]);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<EditQuestionForm>({
     resolver: zodResolver(editQuestionSchema),
+    defaultValues: {
+      imageUrl: "",
+      options: ["", "", "", ""],
+      correctAnswer: 0,
+      marks: 1,
+    },
   });
 
   useEffect(() => {
@@ -42,8 +51,11 @@ export default function EditQuestionPage() {
       try {
         const response = await api.get(`/questions/${questionId}`);
         const questionData = response.data.data;
+        const questionImage = questionData.imageUrl || "";
+        setImagePreview(questionImage);
         reset({
           question: questionData.question,
+          imageUrl: questionImage,
           examId: questionData.examId?._id || questionData.examId,
           options: questionData.options,
           correctAnswer: questionData.correctAnswer,
@@ -74,11 +86,32 @@ export default function EditQuestionPage() {
   const onSubmit = async (data: EditQuestionForm) => {
     setError("");
     try {
-      await api.put(`/questions/${questionId}`, data);
+      await api.put(`/questions/${questionId}`, {
+        ...data,
+        imageUrl: data.imageUrl || "",
+      });
       router.push("/admin/questions");
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to update question");
     }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      setImagePreview(result);
+      setValue("imageUrl", result, { shouldValidate: true });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearImage = () => {
+    setImagePreview("");
+    setValue("imageUrl", "", { shouldValidate: true });
   };
 
   if (loading) {
@@ -110,6 +143,31 @@ export default function EditQuestionPage() {
             error={errors.question?.message}
             {...register("question")}
           />
+
+          <div className="space-y-3">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Question Image (optional)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-indigo-700 hover:file:bg-indigo-100"
+            />
+
+            {imagePreview && (
+              <div className="relative mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <img src={imagePreview} alt="Question preview" className="max-h-72 w-full rounded-xl object-contain" />
+                <button
+                  type="button"
+                  onClick={clearImage}
+                  className="absolute right-3 top-3 rounded-full bg-white/90 px-2 py-1 text-xs font-medium text-slate-700 shadow-sm hover:bg-white"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 gap-6">
             <div className="w-full">

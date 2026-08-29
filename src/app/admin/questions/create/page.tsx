@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import React, { useState, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,7 @@ import { api } from "@/lib/axios";
 
 const createQuestionSchema = z.object({
   question: z.string().min(5, "Question text is required"),
+  imageUrl: z.string().optional().or(z.literal("")),
   examId: z.string().min(1, "Exam is required"),
   options: z.array(z.string().min(1, "Option text cannot be empty")).length(4),
   correctAnswer: z.coerce.number().min(0).max(3),
@@ -23,6 +24,9 @@ export default function CreateQuestionPage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [exams, setExams] = useState<any[]>([]);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [imageName, setImageName] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const fetchExams = async () => {
@@ -42,11 +46,12 @@ export default function CreateQuestionPage() {
     register,
     handleSubmit,
     watch,
-    control,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateQuestionForm>({
     resolver: zodResolver(createQuestionSchema),
     defaultValues: {
+      imageUrl: "",
       options: ["", "", "", ""],
       correctAnswer: 0,
       marks: 1,
@@ -56,11 +61,35 @@ export default function CreateQuestionPage() {
   const onSubmit = async (data: CreateQuestionForm) => {
     setError("");
     try {
-      await api.post("/questions", data);
+      await api.post("/questions", {
+        ...data,
+        imageUrl: data.imageUrl || "",
+      });
       router.push("/admin/questions");
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to create question");
     }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      setImagePreview(result);
+      setImageName(file.name);
+      setValue("imageUrl", result, { shouldValidate: true });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearImage = () => {
+    setImagePreview("");
+    setImageName("");
+    setValue("imageUrl", "", { shouldValidate: true });
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const selectedExamId = watch("examId");
@@ -88,6 +117,50 @@ export default function CreateQuestionPage() {
             error={errors.question?.message}
             {...register("question")}
           />
+
+          <div className="space-y-3">
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Question Image (optional)
+            </label>
+
+            <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex w-fit items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-medium text-indigo-700 transition hover:bg-indigo-100"
+              >
+                Upload Image
+              </button>
+
+              {imageName && !imagePreview && (
+                <p className="text-sm text-slate-500">Selected file: {imageName}</p>
+              )}
+            </div>
+
+            {imagePreview && (
+              <div className="relative mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <img src={imagePreview} alt="Question preview" className="max-h-72 w-full rounded-xl object-contain" />
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-white/80 px-3 py-2 text-xs text-slate-600">
+                  <span className="truncate">{imageName || "Question image"}</span>
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    className="rounded-full border border-slate-200 bg-white px-2 py-1 font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 gap-6">
             <div className="w-full">

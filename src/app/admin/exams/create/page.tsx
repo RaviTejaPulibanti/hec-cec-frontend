@@ -12,6 +12,7 @@ import { Upload } from "lucide-react";
 
 const questionSchema = z.object({
   question: z.string().min(5, "Question text is required"),
+  imageUrl: z.string().optional().or(z.literal("")),
   options: z.array(z.string().min(1, "Option text cannot be empty")).length(4),
   correctAnswer: z.coerce.number().int().min(0).max(3),
   marks: z.coerce.number().min(1, "Marks must be at least 1"),
@@ -33,6 +34,7 @@ type CreateExamForm = z.infer<typeof createExamSchema>;
 export default function CreateExamPage() {
   const router = useRouter();
   const [error, setError] = useState("");
+  const [questionImagePreviews, setQuestionImagePreviews] = useState<Record<number, { dataUrl: string; name: string }>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -79,6 +81,32 @@ export default function CreateExamPage() {
     } finally {
       event.target.value = "";
     }
+  };
+
+  const handleQuestionImageUpload = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      setQuestionImagePreviews((prev) => ({
+        ...prev,
+        [index]: { dataUrl: result, name: file.name },
+      }));
+      setValue(`questions.${index}.imageUrl`, result, { shouldValidate: true });
+    };
+    reader.readAsDataURL(file);
+    event.target.value = "";
+  };
+
+  const clearQuestionImage = (index: number) => {
+    setQuestionImagePreviews((prev) => {
+      const next = { ...prev };
+      delete next[index];
+      return next;
+    });
+    setValue(`questions.${index}.imageUrl`, "", { shouldValidate: true });
   };
 
   const onSubmit = async (data: CreateExamForm) => {
@@ -181,6 +209,42 @@ export default function CreateExamPage() {
                   error={errors.questions?.[index]?.question?.message}
                   {...register(`questions.${index}.question` as const)}
                 />
+
+                <div className="space-y-3">
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Question Image (optional)
+                  </label>
+
+                  <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-3">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      onChange={(event) => handleQuestionImageUpload(event, index)}
+                      className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-indigo-700 hover:file:bg-indigo-100"
+                    />
+                  </div>
+
+                  {questionImagePreviews[index] && (
+                    <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                      <img
+                        src={questionImagePreviews[index].dataUrl}
+                        alt={`Question ${index + 1} preview`}
+                        className="max-h-60 w-full rounded-xl object-contain"
+                      />
+                      <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-white/80 px-3 py-2 text-xs text-slate-600">
+                        <span className="truncate">{questionImagePreviews[index].name || "Question image"}</span>
+                        <button
+                          type="button"
+                          onClick={() => clearQuestionImage(index)}
+                          className="rounded-full border border-slate-200 bg-white px-2 py-1 font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid gap-4 sm:grid-cols-2">
                   {[0, 1, 2, 3].map((optionIndex) => (
                     <Input
