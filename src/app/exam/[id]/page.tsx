@@ -104,18 +104,27 @@ export default function ExamInterfacePage() {
       handleSubmitExam();
     };
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setSubmittedDueToViolation(true);
+        handleSubmitExam();
+      }
+    };
+
     history.pushState(null, "", window.location.href);
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     window.addEventListener("blur", handleBlur);
     window.addEventListener("popstate", handlePopState);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       window.removeEventListener("blur", handleBlur);
       window.removeEventListener("popstate", handlePopState);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isFinished, isSubmitting]);
+  }, [accessToken, isFinished, isSubmitting]);
 
   useEffect(() => {
     const savedAccessToken = localStorage.getItem(`exam_${id}_accessToken`);
@@ -164,6 +173,7 @@ export default function ExamInterfacePage() {
   }, [exam, timeLeft, isFinished]);
 
   const fetchExamDetails = async (token: string) => {
+    setLoading(true);
     try {
       const response = await api.get(`/student/exams/${id}`, {
         headers: { "x-exam-access-token": token },
@@ -245,27 +255,57 @@ export default function ExamInterfacePage() {
   if (!accessToken) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-        <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl ring-1 ring-slate-100">
-          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-            <ShieldCheck className="h-7 w-7" />
+        <div className="w-full max-w-3xl rounded-2xl bg-white p-8 shadow-xl ring-1 ring-slate-100 flex flex-col md:flex-row gap-8">
+          <div className="flex-1">
+            <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+              <ShieldCheck className="h-7 w-7" />
+            </div>
+            <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-indigo-600">Secure exam access</p>
+            <h1 className="text-2xl font-bold text-slate-900">Enter your security code</h1>
+            <p className="mt-2 text-slate-500">Verify the code provided for this exam to continue.</p>
+            <form onSubmit={handleVerifyCode} className="mt-8 space-y-4">
+              <Input
+                label="Security code"
+                type="password"
+                autoComplete="off"
+                value={securityCode}
+                onChange={(event) => setSecurityCode(event.target.value)}
+                icon={<KeyRound className="h-4 w-4" />}
+                error={verificationError}
+              />
+              <Button type="submit" className="w-full" isLoading={isVerifying} disabled={!securityCode.trim()}>
+                Verify and start exam
+              </Button>
+            </form>
           </div>
-          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-indigo-600">Secure exam access</p>
-          <h1 className="text-2xl font-bold text-slate-900">Enter your security code</h1>
-          <p className="mt-2 text-slate-500">Verify the code provided for this exam to continue.</p>
-          <form onSubmit={handleVerifyCode} className="mt-6 space-y-4">
-            <Input
-              label="Security code"
-              type="password"
-              autoComplete="off"
-              value={securityCode}
-              onChange={(event) => setSecurityCode(event.target.value)}
-              icon={<KeyRound className="h-4 w-4" />}
-              error={verificationError}
-            />
-            <Button type="submit" className="w-full" isLoading={isVerifying} disabled={!securityCode.trim()}>
-              Verify and start exam
-            </Button>
-          </form>
+          
+          <div className="flex-1 rounded-xl bg-slate-50 p-6 border border-slate-100 flex flex-col justify-center">
+            <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" /> Exam Rules & Guidelines
+            </h3>
+            <ul className="space-y-3 text-sm text-slate-700">
+              <li className="flex items-start gap-2 leading-relaxed">
+                <span className="text-red-500 font-bold mt-0.5">•</span>
+                <span><strong className="text-slate-900">Do not switch tabs or minimize the browser.</strong> Doing so will instantly auto-submit your exam.</span>
+              </li>
+              <li className="flex items-start gap-2 leading-relaxed">
+                <span className="text-red-500 font-bold mt-0.5">•</span>
+                <span><strong className="text-slate-900">Do not click outside the window.</strong> Loss of focus triggers an automatic submission.</span>
+              </li>
+              <li className="flex items-start gap-2 leading-relaxed">
+                <span className="text-red-500 font-bold mt-0.5">•</span>
+                <span>Right-clicking, copying, and pasting text are strictly disabled.</span>
+              </li>
+              <li className="flex items-start gap-2 leading-relaxed">
+                <span className="text-indigo-500 font-bold mt-0.5">•</span>
+                <span>Do not press the back button or refresh the page unnecessarily.</span>
+              </li>
+              <li className="flex items-start gap-2 leading-relaxed">
+                <span className="text-indigo-500 font-bold mt-0.5">•</span>
+                <span>Once the timer reaches zero, the exam will automatically submit.</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     );
@@ -306,7 +346,12 @@ export default function ExamInterfacePage() {
   const currentQ = questions[currentQuestionIdx];
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 relative">
+    <div 
+      className="flex min-h-screen flex-col bg-slate-50 relative select-none"
+      onContextMenu={(e) => e.preventDefault()}
+      onCopy={(e) => e.preventDefault()}
+      onPaste={(e) => e.preventDefault()}
+    >
       {/* Header */}
       <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
         <div>
