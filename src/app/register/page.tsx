@@ -15,8 +15,8 @@ import Image from "next/image";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name is required"),
-  email: z.string().regex(/^s\d{6}@rguktsklm\.ac\.in$/i, "only college emails are allowed"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  email: z.string().regex(/^[snor]\d{6}@rguktsklm\.ac\.in$/i, "only college emails are allowed"),
+  password: z.string().min(3, "Password must be at least 3 characters"),
   branch: z.enum(["CSE", "AIML", "ECE", "EEE", "CIVIL", "MECH"], { message: "Select a branch" }),
   year: z.enum(["E1", "E2", "E3", "E4"], { message: "Select a year" }),
   section: z.enum(["A", "B", "C", "D", "E"], { message: "Select a section" }),

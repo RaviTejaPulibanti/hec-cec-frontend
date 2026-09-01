@@ -15,7 +15,7 @@ import Image from "next/image";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(3, "Password must be at least 3 characters"),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
