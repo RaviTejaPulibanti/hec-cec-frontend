@@ -9,14 +9,14 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className = "", variant = "primary", size = "md", isLoading, children, ...props }, ref) => {
     const baseStyles =
-      "inline-flex items-center justify-center rounded-xl font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a14e40]/50 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]";
+      "inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a14e40]/40 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.99]";
 
     const variants = {
-      primary: "bg-[#a14e40] text-white hover:bg-[#8a3f33] shadow-md shadow-[#a14e40]/20",
-      secondary: "bg-[#a14e40] text-white hover:bg-[#8a3f33] shadow-sm",
-      outline: "border-2 border-[#a14e40] bg-transparent hover:bg-[#a14e40]/10 text-[#a14e40]",
-      danger: "bg-[#a14e40] text-white hover:bg-[#8a3f33] shadow-sm shadow-[#a14e40]/20",
-      ghost: "bg-transparent hover:bg-[#a14e40]/10 text-[#a14e40]",
+      primary: "bg-gradient-to-r from-[#a14e40] to-[#8a3f33] text-white shadow-lg shadow-[#a14e40]/25 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#a14e40]/30",
+      secondary: "bg-[#f4e7e4] text-[#8a3f33] hover:bg-[#f0ddd9]",
+      outline: "border border-[#a14e40]/30 bg-white/80 text-[#a14e40] hover:bg-[#a14e40]/5",
+      danger: "bg-gradient-to-r from-[#a14e40] to-[#8a3f33] text-white shadow-lg shadow-[#a14e40]/25 hover:-translate-y-0.5",
+      ghost: "bg-transparent text-[#a14e40] hover:bg-[#a14e40]/10",
     };
 
     const sizes = {

@@ -6,6 +6,9 @@
   --brand: #a14e40;
   --brand-dark: #8a3f33;
   --surface: #ffffff;
+  --surface-soft: #f8fafb;
+  --accent-soft: rgba(161, 78, 64, 0.08);
+  --shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.08);
 }
 
 @theme inline {
@@ -20,7 +23,10 @@ html {
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at top left, rgba(161, 78, 64, 0.12), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(74, 111, 165, 0.08), transparent 24%),
+    linear-gradient(135deg, #f6f7f8 0%, #edf2f4 100%);
   color: var(--foreground);
   font-family: var(--font-geist-sans), sans-serif;
   min-height: 100vh;
