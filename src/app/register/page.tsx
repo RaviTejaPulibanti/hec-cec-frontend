@@ -103,7 +103,9 @@ export default function RegisterPage() {
 
             <label className="block text-sm font-medium text-slate-700">
               <span className="mb-2 flex items-center gap-2"><BookOpen className="h-5 w-5" /> Branch</span>
-              <select className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900" {...register("branch")}>
+              <select className={`flex h-12 w-full rounded-xl border bg-white px-4 text-sm text-slate-900 transition-colors hover:border-slate-300 focus-visible:border-indigo-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 ${
+                errors.branch ? "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500" : "border-slate-200"
+              }`} {...register("branch")}>
                 <option value="">Select Branch</option>
                 {['CSE', 'AIML', 'ECE', 'EEE', 'MECH', 'CIVIL'].map((branch) => <option key={branch} value={branch}>{branch}</option>)}
               </select>

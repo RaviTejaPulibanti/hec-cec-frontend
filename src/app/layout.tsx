@@ -17,7 +17,11 @@ export const metadata: Metadata = {
   description: "Official portal for Higher Education Cell - Student Dashboard and Exam Management.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+export default function RootLayout({ children }: LayoutProps) {
   return (
     <html
       lang="en"
