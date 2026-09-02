@@ -25,6 +25,7 @@ export default function ExamInterfacePage() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState("");
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   
   const answersRef = React.useRef(answers);
   useEffect(() => {
@@ -240,7 +241,15 @@ export default function ExamInterfacePage() {
     setAnswers({ ...answers, [questionId]: optionIdx });
   };
 
+  const handleSubmitRequest = () => {
+    if (isSubmitting || isFinished) return;
+    setShowSubmitConfirm(true);
+  };
 
+  const handleConfirmSubmit = async () => {
+    setShowSubmitConfirm(false);
+    await handleSubmitExam();
+  };
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -344,6 +353,9 @@ export default function ExamInterfacePage() {
   }
 
   const currentQ = questions[currentQuestionIdx];
+  const totalQuestions = questions.length;
+  const answeredCount = Object.keys(answers).length;
+  const unansweredCount = Math.max(0, totalQuestions - answeredCount);
 
   return (
     <div 
@@ -352,6 +364,56 @@ export default function ExamInterfacePage() {
       onCopy={(e) => e.preventDefault()}
       onPaste={(e) => e.preventDefault()}
     >
+      {showSubmitConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-slate-200">
+            <div className="mb-5 flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                <AlertTriangle className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">Submit Exam?</h2>
+                <p className="mt-1 text-sm text-slate-600">Are you sure you want to submit your exam now?</p>
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-xl border border-slate-200">
+              <table className="min-w-full text-left text-sm">
+                <thead className="bg-slate-100 text-slate-700">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold">Summary</th>
+                    <th className="px-4 py-3 font-semibold">Count</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white text-slate-700">
+                  <tr className="border-t border-slate-200">
+                    <td className="px-4 py-3">Total Questions</td>
+                    <td className="px-4 py-3 font-semibold">{totalQuestions}</td>
+                  </tr>
+                  <tr className="border-t border-slate-200">
+                    <td className="px-4 py-3">Answered</td>
+                    <td className="px-4 py-3 font-semibold text-emerald-600">{answeredCount}</td>
+                  </tr>
+                  <tr className="border-t border-slate-200">
+                    <td className="px-4 py-3">Not Answered</td>
+                    <td className="px-4 py-3 font-semibold text-red-600">{unansweredCount}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setShowSubmitConfirm(false)} disabled={isSubmitting}>
+                Review
+              </Button>
+              <Button variant="danger" onClick={handleConfirmSubmit} isLoading={isSubmitting}>
+                Yes, Submit
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
         <div>
@@ -363,7 +425,7 @@ export default function ExamInterfacePage() {
             <Clock className="h-5 w-5" />
             {formatTime(timeLeft)}
           </div>
-          <Button variant="danger" size="sm" onClick={handleSubmitExam} isLoading={isSubmitting}>
+          <Button variant="danger" size="sm" onClick={handleSubmitRequest} isLoading={isSubmitting}>
             Submit Exam
           </Button>
         </div>
@@ -433,7 +495,7 @@ export default function ExamInterfacePage() {
               disabled={isSubmitting}
               onClick={() => {
                 if (currentQuestionIdx === questions.length - 1) {
-                  handleSubmitExam();
+                  handleSubmitRequest();
                   return;
                 }
 
