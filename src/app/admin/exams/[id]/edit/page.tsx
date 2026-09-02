@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { api } from "@/lib/axios";
+import Link from "next/link";
+import { Edit2 } from "lucide-react";
 
 const editExamSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -24,6 +26,7 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [questions, setQuestions] = useState<Array<{ _id: string; question: string }>>([]);
   
   // React 19 / Next 15 pattern for unrolling promises
   const { id } = use(params);
@@ -42,6 +45,7 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
       try {
         const response = await api.get(`/exam/${id}`);
         const exam = response.data.data;
+        setQuestions(exam.questions || []);
         
         reset({
           title: exam.title,
@@ -92,6 +96,37 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
             {error}
           </div>
         )}
+
+        <div className="mb-8 border-b border-slate-100 pb-8">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Exam Questions</h2>
+              <p className="mt-1 text-sm text-slate-500">Edit the questions currently assigned to this exam.</p>
+            </div>
+            <span className="text-sm font-medium text-slate-500">{questions.length} questions</span>
+          </div>
+
+          {questions.length > 0 ? (
+            <div className="mt-4 space-y-3">
+              {questions.map((question, index) => (
+                <div key={question._id} className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                  <p className="min-w-0 truncate text-sm font-medium text-slate-700">
+                    <span className="mr-2 text-slate-400">{index + 1}.</span>
+                    {question.question}
+                  </p>
+                  <Link href={`/admin/questions/${question._id}/edit`}>
+                    <Button type="button" variant="outline" size="sm">
+                      <Edit2 className="mr-2 h-4 w-4" />
+                      Edit
+                    </Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">No questions have been added yet.</p>
+          )}
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Input

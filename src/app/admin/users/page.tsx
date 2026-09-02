@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { Search } from "lucide-react";
 
 interface User {
@@ -100,15 +101,15 @@ export default function UsersPage() {
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
           <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">Role:</span>
-          <select
-            className="rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-4 text-sm text-slate-900 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          <Select
+            containerClassName="w-full md:w-44"
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
           >
             <option value="ALL">All Roles</option>
             <option value="STUDENT">Student</option>
             <option value="COLLEGE_ADMIN">College Admin</option>
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -159,14 +160,14 @@ export default function UsersPage() {
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <select
-                        className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                      <Select
+                        containerClassName="ml-auto w-44"
                         value={user.role}
                         onChange={(e) => handleRoleChange(user._id, e.target.value)}
                       >
                         <option value="STUDENT">Student</option>
                         <option value="COLLEGE_ADMIN">College Admin</option>
-                      </select>
+                      </Select>
                     </td>
                   </tr>
                 ))

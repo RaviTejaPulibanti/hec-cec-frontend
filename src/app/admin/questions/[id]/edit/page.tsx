@@ -7,12 +7,12 @@ import * as z from "zod";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { api } from "@/lib/axios";
 
 const editQuestionSchema = z.object({
   question: z.string().min(5, "Question text is required"),
   imageUrl: z.string().optional().or(z.literal("")),
-  examId: z.string().min(1, "Exam is required"),
   options: z.array(z.string().min(1, "Option text cannot be empty")).length(4),
   correctAnswer: z.coerce.number().min(0).max(3),
   marks: z.coerce.number().min(1, "Marks must be at least 1"),
@@ -27,7 +27,7 @@ export default function EditQuestionPage() {
   
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [exams, setExams] = useState<any[]>([]);
+  const [examId, setExamId] = useState("");
   const [imagePreview, setImagePreview] = useState<string>("");
 
   const {
@@ -52,11 +52,12 @@ export default function EditQuestionPage() {
         const response = await api.get(`/questions/${questionId}`);
         const questionData = response.data.data;
         const questionImage = questionData.imageUrl || "";
+        const questionExamId = questionData.examId?._id || questionData.examId;
+        setExamId(questionExamId);
         setImagePreview(questionImage);
         reset({
           question: questionData.question,
           imageUrl: questionImage,
-          examId: questionData.examId?._id || questionData.examId,
           options: questionData.options,
           correctAnswer: questionData.correctAnswer,
           marks: questionData.marks,
@@ -67,19 +68,8 @@ export default function EditQuestionPage() {
         setLoading(false);
       }
     };
-    const fetchExams = async () => {
-      try {
-        const response = await api.get("/exam");
-        if (response.data.success) {
-          setExams(response.data.data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch exams:", err);
-      }
-    };
     if (questionId) {
       fetchQuestion();
-      fetchExams();
     }
   }, [questionId, reset]);
 
@@ -90,7 +80,7 @@ export default function EditQuestionPage() {
         ...data,
         imageUrl: data.imageUrl || "",
       });
-      router.push("/admin/questions");
+      router.push(examId ? `/admin/exams/${examId}/edit` : "/admin/exams");
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to update question");
     }
@@ -169,22 +159,7 @@ export default function EditQuestionPage() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <div className="w-full">
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Exam
-              </label>
-              <select
-                className="flex h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 transition-colors placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-indigo-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
-                {...register("examId")}
-              >
-                <option value="">Select an Exam</option>
-                {exams.map((exam) => (
-                  <option key={exam._id} value={exam._id}>{exam.title}</option>
-                ))}
-              </select>
-              {errors.examId && <p className="mt-1.5 text-sm text-red-500">{errors.examId.message}</p>}
-            </div>
+          <div>
             <Input
               label="Marks"
               type="number"
@@ -211,15 +186,12 @@ export default function EditQuestionPage() {
             <label className="mb-2 block text-sm font-medium text-slate-700">
               Correct Answer
             </label>
-            <select
-              className="flex h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 transition-colors placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-indigo-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
-              {...register("correctAnswer")}
-            >
-              <option value={0}>Option 1</option>
-              <option value={1}>Option 2</option>
-              <option value={2}>Option 3</option>
-              <option value={3}>Option 4</option>
-            </select>
+            <Select {...register("correctAnswer")}>
+                <option value={0}>Option 1</option>
+                <option value={1}>Option 2</option>
+                <option value={2}>Option 3</option>
+                <option value={3}>Option 4</option>
+            </Select>
             {errors.correctAnswer && <p className="mt-1.5 text-sm text-red-500">{errors.correctAnswer.message}</p>}
           </div>
 
@@ -227,7 +199,7 @@ export default function EditQuestionPage() {
             <Button
               type="button"
               variant="ghost"
-              onClick={() => router.push("/admin/questions")}
+              onClick={() => router.push(examId ? `/admin/exams/${examId}/edit` : "/admin/exams")}
             >
               Cancel
             </Button>

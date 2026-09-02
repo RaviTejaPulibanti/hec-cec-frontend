@@ -5,6 +5,7 @@ import { api } from "@/lib/axios";
 import { Question, Exam } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { Plus, Edit2, Trash2, Upload, X } from "lucide-react";
+import { Select } from "@/components/ui/Select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -19,6 +20,7 @@ export default function QuestionsPage() {
   const [selectedExamId, setSelectedExamId] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadInProgressRef = useRef(false);
 
   useEffect(() => {
     fetchQuestions();
@@ -58,6 +60,8 @@ export default function QuestionsPage() {
 
   const handleBulkUpload = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (uploadInProgressRef.current) return;
+
     if (!selectedExamId) {
       alert("Please select an exam first.");
       return;
@@ -69,6 +73,7 @@ export default function QuestionsPage() {
       return;
     }
 
+    uploadInProgressRef.current = true;
     setUploading(true);
     try {
       const text = await file.text();
@@ -88,10 +93,12 @@ export default function QuestionsPage() {
       setSelectedExamId("");
       if (fileInputRef.current) fileInputRef.current.value = "";
       fetchQuestions();
+      fetchExams();
     } catch (error: any) {
       console.error("Bulk upload failed", error);
       alert("Upload failed: " + (error.response?.data?.message || error.message));
     } finally {
+      uploadInProgressRef.current = false;
       setUploading(false);
     }
   };
@@ -112,17 +119,16 @@ export default function QuestionsPage() {
             <form onSubmit={handleBulkUpload} className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">Select Exam</label>
-                <select
+                <Select
                   required
                   value={selectedExamId}
                   onChange={(e) => setSelectedExamId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 outline-none transition-all focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
                 >
                   <option value="" className="text-slate-500">-- Choose an Exam --</option>
                   {exams.map(exam => (
                     <option key={exam._id} value={exam._id} className="text-slate-900">{exam.title}</option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div>

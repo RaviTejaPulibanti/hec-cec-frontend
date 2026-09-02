@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ClipboardList } from "lucide-react";
 import { api } from "@/lib/axios";
 import { Exam } from "@/types";
+import { Select } from "@/components/ui/Select";
 
 interface AdminResult {
   _id: string;
@@ -82,12 +83,12 @@ export default function AdminResultsPage() {
         <label htmlFor="exam-select" className="mb-2 block text-sm font-semibold text-slate-900">
           Select exam
         </label>
-        <select
+        <Select
           id="exam-select"
           value={selectedExamId}
           onChange={(event) => setSelectedExamId(event.target.value)}
           disabled={loadingExams}
-          className="w-full max-w-xl rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#176d6a] focus:ring-2 focus:ring-[#d4f0eb] disabled:bg-slate-50"
+          containerClassName="max-w-xl"
         >
           <option value="">Choose an exam to view results</option>
           {exams.map((exam) => (
@@ -95,7 +96,7 @@ export default function AdminResultsPage() {
               {exam.title}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}

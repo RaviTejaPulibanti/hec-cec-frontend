@@ -49,7 +49,7 @@ export default function CreateExamPage() {
       questions: [{ question: "", options: ["", "", "", ""], correctAnswer: 0, marks: 1, negativeMarks: 0 }],
     },
   });
-  const { fields, append, remove } = useFieldArray({ control, name: "questions" });
+  const { fields, append, remove, replace } = useFieldArray({ control, name: "questions" });
 
   const handleQuestionsUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -66,15 +66,7 @@ export default function CreateExamPage() {
         throw new Error("Each question needs text, 4 options, a valid answer index, marks, and negative marks.");
       }
 
-      result.data.forEach((question, index) => {
-        setValue(`questions.${index}`, question, { shouldValidate: true });
-      });
-      for (let index = fields.length - 1; index >= result.data.length; index -= 1) {
-        remove(index);
-      }
-      if (result.data.length > fields.length) {
-        result.data.slice(fields.length).forEach((question) => append(question));
-      }
+      replace(result.data);
       setValue("totalQuestions", result.data.length, { shouldValidate: true });
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "Could not read the JSON file.");

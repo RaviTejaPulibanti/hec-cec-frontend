@@ -57,6 +57,7 @@ export default function ExamInterfacePage() {
       localStorage.removeItem(`exam_${id}_answers`);
       localStorage.removeItem(`exam_${id}_currentIdx`);
       localStorage.removeItem(`exam_${id}_endTime`);
+      localStorage.removeItem(`exam_${id}_accessToken`);
       
       setIsFinished(true);
     } catch (error: any) {
@@ -66,12 +67,14 @@ export default function ExamInterfacePage() {
         localStorage.removeItem(`exam_${id}_answers`);
         localStorage.removeItem(`exam_${id}_currentIdx`);
         localStorage.removeItem(`exam_${id}_endTime`);
+        localStorage.removeItem(`exam_${id}_accessToken`);
         setIsFinished(true);
       } else if (error.response && error.response.status === 500 && error.response.data?.message?.includes("E11000")) {
         // Handle MongoDB duplicate key error silently
         localStorage.removeItem(`exam_${id}_answers`);
         localStorage.removeItem(`exam_${id}_currentIdx`);
         localStorage.removeItem(`exam_${id}_endTime`);
+        localStorage.removeItem(`exam_${id}_accessToken`);
         setIsFinished(true);
       } else {
         alert(error.response?.data?.message || "Failed to submit exam. Please try again.");
@@ -180,6 +183,19 @@ export default function ExamInterfacePage() {
         headers: { "x-exam-access-token": token },
       });
       const fetchedExam = response.data.data;
+      
+      // Check if exam was already submitted
+      // Check multiple possible property names from backend
+      if (fetchedExam.submitted || fetchedExam.isSubmitted || fetchedExam.submittedAt || fetchedExam.result) {
+        localStorage.removeItem(`exam_${id}_answers`);
+        localStorage.removeItem(`exam_${id}_currentIdx`);
+        localStorage.removeItem(`exam_${id}_endTime`);
+        localStorage.removeItem(`exam_${id}_accessToken`);
+        setAccessToken(null);
+        router.replace(`/dashboard/results`);
+        return;
+      }
+      
       setExam(fetchedExam);
       
       setQuestions(fetchedExam.questions || []);
@@ -200,8 +216,18 @@ export default function ExamInterfacePage() {
       }
       
       setTimeLeft(finalSecondsLeft);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to load exam", error);
+      // If error indicates exam was already submitted or accessed
+      if (error.response?.status === 400 || error.response?.status === 403) {
+        localStorage.removeItem(`exam_${id}_answers`);
+        localStorage.removeItem(`exam_${id}_currentIdx`);
+        localStorage.removeItem(`exam_${id}_endTime`);
+        localStorage.removeItem(`exam_${id}_accessToken`);
+        setAccessToken(null);
+        router.replace(`/dashboard/results`);
+        return;
+      }
       localStorage.removeItem(`exam_${id}_accessToken`);
       setAccessToken(null);
     } finally {
@@ -522,8 +548,8 @@ export default function ExamInterfacePage() {
                     isCurrent
                       ? "bg-indigo-600 text-white ring-2 ring-indigo-600 ring-offset-2"
                       : isAnswered
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      ? "bg-emerald-200 text-emerald-700"
+                      : "bg-red-200 text-red-700 hover:bg-red-300"
                   }`}
                 >
                   {idx + 1}
@@ -534,10 +560,10 @@ export default function ExamInterfacePage() {
           
           <div className="mt-8 space-y-3 border-t border-slate-100 pt-6">
             <div className="flex items-center gap-3 text-sm text-slate-600">
-              <div className="h-4 w-4 rounded bg-emerald-100" /> Answered
+              <div className="h-4 w-4 rounded bg-emerald-200" /> Answered
             </div>
             <div className="flex items-center gap-3 text-sm text-slate-600">
-              <div className="h-4 w-4 rounded bg-slate-100" /> Not Answered
+              <div className="h-4 w-4 rounded bg-red-200" /> Not Answered
             </div>
             <div className="flex items-center gap-3 text-sm text-slate-600">
               <div className="h-4 w-4 rounded bg-indigo-600" /> Current

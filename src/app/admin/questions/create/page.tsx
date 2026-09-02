@@ -7,6 +7,7 @@ import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { api } from "@/lib/axios";
 
 const createQuestionSchema = z.object({
@@ -167,17 +168,14 @@ export default function CreateQuestionPage() {
               <label className="mb-2 block text-sm font-medium text-slate-700">
                 Exam
               </label>
-              <select
-                className="flex h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 transition-colors placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-indigo-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
-                {...register("examId")}
-              >
-                <option value="">Select an Exam</option>
-                {exams.map((exam) => (
-                  <option key={exam._id} value={exam._id}>
-                    {exam.title} ({exam.questionCount || 0}/{exam.totalQuestions})
-                  </option>
-                ))}
-              </select>
+              <Select {...register("examId")}>
+                  <option value="">Select an Exam</option>
+                  {exams.map((exam) => (
+                    <option key={exam._id} value={exam._id}>
+                      {exam.title} ({exam.questionCount || 0}/{exam.totalQuestions})
+                    </option>
+                  ))}
+              </Select>
               {errors.examId && <p className="mt-1.5 text-sm text-red-500">{errors.examId.message}</p>}
               {isExamFull && (
                 <p className="mt-1.5 text-sm text-amber-600 font-medium">
@@ -211,15 +209,12 @@ export default function CreateQuestionPage() {
             <label className="mb-2 block text-sm font-medium text-slate-700">
               Correct Answer
             </label>
-            <select
-              className="flex h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 transition-colors placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-indigo-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
-              {...register("correctAnswer")}
-            >
-              <option value={0}>Option 1</option>
-              <option value={1}>Option 2</option>
-              <option value={2}>Option 3</option>
-              <option value={3}>Option 4</option>
-            </select>
+            <Select {...register("correctAnswer")}>
+                <option value={0}>Option 1</option>
+                <option value={1}>Option 2</option>
+                <option value={2}>Option 3</option>
+                <option value={3}>Option 4</option>
+            </Select>
             {errors.correctAnswer && <p className="mt-1.5 text-sm text-red-500">{errors.correctAnswer.message}</p>}
           </div>
 

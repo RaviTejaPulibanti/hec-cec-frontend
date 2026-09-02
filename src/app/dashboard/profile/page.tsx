@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { User, Mail, ShieldCheck, Edit3, BookOpen, GraduationCap, Users, CreditCard } from "lucide-react";
 import { api } from "@/lib/axios";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 
 export default function ProfilePage() {
   const { user, login } = useAuthStore();
@@ -113,16 +114,16 @@ export default function ProfilePage() {
                 <BookOpen className="h-4 w-4" /> Branch
               </dt>
               {isEditing ? (
-                <select
+                <Select
                   value={formData.branch}
                   onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-                  className="mt-2 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border text-black font-medium bg-white placeholder:text-gray-400"
+                  containerClassName="mt-2"
                 >
                   <option value="">Select Branch</option>
                   {["CSE", "AIML", "ECE", "EEE", "CIVIL", "MECH"].map(b => (
                     <option key={b} value={b}>{b}</option>
                   ))}
-                </select>
+                </Select>
               ) : (
                 <dd className="mt-2 text-base font-medium text-slate-900">{user.branch || "Not set"}</dd>
               )}
@@ -133,16 +134,16 @@ export default function ProfilePage() {
                 <GraduationCap className="h-4 w-4" /> Year
               </dt>
               {isEditing ? (
-                <select
+                <Select
                   value={formData.year}
                   onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                  className="mt-2 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border text-black font-medium bg-white placeholder:text-gray-400"
+                  containerClassName="mt-2"
                 >
                   <option value="">Select Year</option>
                   {["E1", "E2", "E3", "E4"].map(y => (
                     <option key={y} value={y}>{y}</option>
                   ))}
-                </select>
+                </Select>
               ) : (
                 <dd className="mt-2 text-base font-medium text-slate-900">{user.year || "Not set"}</dd>
               )}
@@ -153,16 +154,16 @@ export default function ProfilePage() {
                 <Users className="h-4 w-4" /> Section
               </dt>
               {isEditing ? (
-                <select
+                <Select
                   value={formData.section}
                   onChange={(e) => setFormData({ ...formData, section: e.target.value })}
-                  className="mt-2 block w-full rounded-md border-slate-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border text-black font-medium bg-white placeholder:text-gray-400"
+                  containerClassName="mt-2"
                 >
                   <option value="">Select Section</option>
                   {["A", "B", "C", "D", "E"].map(c => (
                     <option key={c} value={c}>{c}</option>
                   ))}
-                </select>
+                </Select>
               ) : (
                 <dd className="mt-2 text-base font-medium text-slate-900">{user.section || user.studentClass || "Not set"}</dd>
               )}
