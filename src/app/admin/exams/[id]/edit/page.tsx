@@ -21,7 +21,7 @@ const editExamSchema = z.object({
   resultReleaseMode: z.enum(["AFTER_EXAM", "IMMEDIATE", "MANUAL"]).default("AFTER_EXAM"),
 });
 
-type EditExamForm = z.infer<typeof editExamSchema>;
+type EditExamForm = z.input<typeof editExamSchema>;
 
 export default function EditExamPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
