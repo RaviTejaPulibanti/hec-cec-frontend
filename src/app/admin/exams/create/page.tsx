@@ -26,6 +26,7 @@ const createExamSchema = z.object({
   examDate: z.string().nonempty("Exam date is required"),
   endDate: z.string().nonempty("End date is required"),
   securityCode: z.string().min(4, "Security code must be at least 4 characters"),
+  resultReleaseMode: z.enum(["AFTER_EXAM", "IMMEDIATE", "MANUAL"]).default("AFTER_EXAM"),
   questions: z.array(questionSchema).min(1, "Add at least one question"),
 });
 
@@ -46,6 +47,7 @@ export default function CreateExamPage() {
   } = useForm<CreateExamForm>({
     resolver: zodResolver(createExamSchema),
     defaultValues: {
+      resultReleaseMode: "AFTER_EXAM",
       questions: [{ question: "", options: ["", "", "", ""], correctAnswer: 0, marks: 1, negativeMarks: 0 }],
     },
   });
@@ -163,6 +165,23 @@ export default function CreateExamPage() {
             error={errors.endDate?.message}
             {...register("endDate")}
           />
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Result Release Setting
+            </label>
+            <select
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              {...register("resultReleaseMode")}
+            >
+              <option value="AFTER_EXAM">After Exam Window Ends (Recommended)</option>
+              <option value="IMMEDIATE">Immediate (During Exam upon student submit)</option>
+              <option value="MANUAL">Manual (Admin must click Release Results)</option>
+            </select>
+            <p className="mt-1 text-xs text-slate-500">
+              Controls when students can view their score, review questions, and calculate progress metrics.
+            </p>
+          </div>
 
           <div className="space-y-6 border-t border-slate-100 pt-6">
             <div className="flex items-center justify-between">

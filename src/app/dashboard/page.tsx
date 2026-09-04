@@ -54,12 +54,13 @@ export default function StudentDashboardPage() {
       const results = resultsRes.data.data || [];
       const completedIds = new Set<string>();
       
-      let totalExams = results.length;
+      let totalExams = results.filter((result: any) => result.resultsReleased !== false && result.score !== null).length;
       let highestPercentage = -Infinity;
       let highestScoreDisplay = "0";
 
       results.forEach((result: any) => {
         if (result.exam?._id) completedIds.add(result.exam._id);
+        if (result.resultsReleased === false || result.score === null) return;
         const score = result.score || 0;
         const totalMarks = result.totalMarks || 0;
         

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { api } from "@/lib/axios";
-import { Award, Target, TrendingUp, CheckCircle2, XCircle, X, Eye } from "lucide-react";
+import { Award, Target, TrendingUp, CheckCircle2, XCircle, X, Eye, AlertTriangle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export default function ResultsPage() {
@@ -88,6 +88,7 @@ export default function ResultsPage() {
 
   const progressSummary = results.reduce(
     (summary, result) => {
+      if (result.resultsReleased === false || result.score === null) return summary;
       const totalMarks = Number(result.totalMarks) || 0;
       const score = Number(result.score) || 0;
 
@@ -101,6 +102,7 @@ export default function ResultsPage() {
     },
     { earnedMarks: 0, totalMarks: 0, correctAnswers: 0, wrongAnswers: 0, unattempted: 0 }
   );
+  const releasedResults = results.filter((result) => result.resultsReleased !== false && result.score !== null);
   const progressPercentage = progressSummary.totalMarks > 0
     ? Math.max(0, Math.min(100, Math.round((progressSummary.earnedMarks / progressSummary.totalMarks) * 100)))
     : 0;
@@ -117,7 +119,7 @@ export default function ResultsPage() {
                 <h2 className="text-xl font-bold text-slate-900">Exam Review</h2>
                 {detailedResult && (
                   <p className="text-sm text-slate-500 mt-1">
-                    {detailedResult.exam?.title} • Score: {detailedResult.score}
+                    {detailedResult.exam?.title} • {detailedResult.resultsReleased === false ? "Results Pending" : `Score: ${detailedResult.score}`}
                   </p>
                 )}
               </div>
@@ -129,14 +131,32 @@ export default function ResultsPage() {
             <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
               {loadingDetails ? (
                 <div className="flex justify-center items-center h-40 text-slate-500">Loading exam details...</div>
+              ) : detailedResult && detailedResult.resultsReleased === false ? (
+                <div className="flex flex-col items-center justify-center p-12 text-center bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                  <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                    <Lock className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">Results Pending Announcement</h3>
+                  <p className="text-sm text-slate-500 max-w-md">
+                    Results have not been released yet for this exam. Please check back after the administrator publishes the results.
+                  </p>
+                </div>
               ) : detailedResult && detailedResult.allQuestions ? (
                 <div className="space-y-6">
+                  {detailedResult.solutionsReleased === false && (
+                    <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm flex items-center gap-3">
+                      <Lock className="w-5 h-5 flex-shrink-0 text-amber-600" />
+                      <span>Official solutions and answer keys will be unlocked once this exam officially ends for all students.</span>
+                    </div>
+                  )}
+
                   {detailedResult.allQuestions.map((q: any, idx: number) => {
                     const ans = detailedResult.answers.find((a: any) => 
                       (a.question && a.question._id === q._id) || a.question === q._id
                     );
                     const isAttempted = !!ans;
-                    const isCorrectOverall = isAttempted && ans.selectedOption === q.correctAnswer;
+                    const solutionsReleased = detailedResult.solutionsReleased !== false;
+                    const isCorrectOverall = solutionsReleased && isAttempted && ans.selectedOption === q.correctAnswer;
                     
                     return (
                       <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
@@ -149,6 +169,11 @@ export default function ResultsPage() {
                             {!isAttempted ? (
                               <div className="flex items-center text-slate-500 gap-1.5 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
                                 <span className="text-sm font-semibold">Not Attempted</span>
+                              </div>
+                            ) : !solutionsReleased ? (
+                              <div className="flex items-center text-indigo-600 gap-1.5 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100">
+                                <CheckCircle2 className="w-4 h-4"/> 
+                                <span className="text-sm font-semibold">Recorded</span>
                               </div>
                             ) : isCorrectOverall ? (
                               <div className="flex items-center text-emerald-600 gap-1.5 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
@@ -166,20 +191,28 @@ export default function ResultsPage() {
                         <div className="space-y-3">
                           {q.options.map((opt: string, oIdx: number) => {
                             const isSelected = isAttempted && ans.selectedOption === oIdx;
-                            const isCorrectOption = q.correctAnswer === oIdx;
+                            const isCorrectOption = solutionsReleased && q.correctAnswer === oIdx;
                             
                             let styling = "border-slate-200 bg-white hover:border-slate-300";
                             let iconStyling = "text-slate-500 border-slate-300";
                             let textStyling = "text-slate-700";
 
-                            if (isCorrectOption) {
-                              styling = "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500";
-                              iconStyling = "bg-emerald-500 text-white border-emerald-500";
-                              textStyling = "text-emerald-900 font-medium";
-                            } else if (isSelected && !isCorrectOption) {
-                              styling = "border-red-500 bg-red-50 ring-1 ring-red-500";
-                              iconStyling = "bg-red-500 text-white border-red-500";
-                              textStyling = "text-red-900 font-medium";
+                            if (!solutionsReleased) {
+                              if (isSelected) {
+                                styling = "border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500";
+                                iconStyling = "bg-indigo-500 text-white border-indigo-500";
+                                textStyling = "text-indigo-900 font-medium";
+                              }
+                            } else {
+                              if (isCorrectOption) {
+                                styling = "border-emerald-500 bg-emerald-50 ring-1 ring-emerald-500";
+                                iconStyling = "bg-emerald-500 text-white border-emerald-500";
+                                textStyling = "text-emerald-900 font-medium";
+                              } else if (isSelected && !isCorrectOption) {
+                                styling = "border-red-500 bg-red-50 ring-1 ring-red-500";
+                                iconStyling = "bg-red-500 text-white border-red-500";
+                                textStyling = "text-red-900 font-medium";
+                              }
                             }
 
                             return (
@@ -188,13 +221,13 @@ export default function ResultsPage() {
                                   {String.fromCharCode(65 + oIdx)}
                                 </div>
                                 <span className={`${textStyling} text-base`}>{opt}</span>
-                                {isCorrectOption && isSelected && (
+                                {solutionsReleased && isCorrectOption && isSelected && (
                                   <CheckCircle2 className="w-5 h-5 text-emerald-500 ml-auto flex-shrink-0" />
                                 )}
-                                {!isCorrectOption && isSelected && (
+                                {solutionsReleased && !isCorrectOption && isSelected && (
                                   <XCircle className="w-5 h-5 text-red-500 ml-auto flex-shrink-0" />
                                 )}
-                                {isCorrectOption && !isSelected && (
+                                {solutionsReleased && isCorrectOption && !isSelected && (
                                   <CheckCircle2 className="w-5 h-5 text-emerald-500 ml-auto flex-shrink-0 opacity-50" />
                                 )}
                               </div>
@@ -313,7 +346,7 @@ export default function ResultsPage() {
           </div>
           <div>
             <p className="text-sm font-medium text-slate-500">Exams Taken</p>
-            <p className="text-2xl font-bold text-slate-900">{results.length || 0}</p>
+            <p className="text-2xl font-bold text-slate-900">{releasedResults.length || 0}</p>
           </div>
         </div>
         <div className="flex items-center gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
@@ -323,12 +356,11 @@ export default function ResultsPage() {
           <div>
             <p className="text-sm font-medium text-slate-500">Highest Score</p>
             <p className="text-2xl font-bold text-slate-900">
-              {results.length > 0 
-                ? (() => {
-                    const highest = results.reduce((max, r) => (r.score > max.score ? r : max), results[0]);
-                    return `${highest.score} / ${highest.totalMarks}`;
-                  })()
-                : "--"}
+              {(() => {
+                if (releasedResults.length === 0) return "--";
+                const highest = releasedResults.reduce((max, r) => (r.score > max.score ? r : max), releasedResults[0]);
+                return `${highest.score} / ${highest.totalMarks}`;
+              })()}
             </p>
           </div>
         </div>
@@ -392,12 +424,20 @@ export default function ResultsPage() {
                     <td className="px-4 sm:px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{result.exam?.title || `Exam #${idx+1}`}</td>
                     <td className="px-4 sm:px-6 py-4 whitespace-nowrap">{new Date(result.createdAt || Date.now()).toLocaleDateString()}</td>
                     <td className="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
-                      <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-600">
-                        {result.score} / {result.totalMarks}
-                      </span>
+                      {result.resultsReleased === false ? (
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-600">
+                          Results Pending
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-600">
+                          {result.score} / {result.totalMarks}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 sm:px-6 py-4">
-                      {(() => {
+                      {result.resultsReleased === false ? (
+                        <div className="text-center text-xs font-medium text-slate-400 italic">Withheld</div>
+                      ) : (() => {
                         const score = Number(result.score) || 0;
                         const totalMarks = Number(result.totalMarks) || 0;
                         const performance = totalMarks > 0

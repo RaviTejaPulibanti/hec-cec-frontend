@@ -18,6 +18,7 @@ const editExamSchema = z.object({
   examDate: z.string().nonempty("Exam date is required"),
   endDate: z.string().nonempty("End date is required"),
   securityCode: z.string().min(4, "Security code must be at least 4 characters").optional().or(z.literal("")),
+  resultReleaseMode: z.enum(["AFTER_EXAM", "IMMEDIATE", "MANUAL"]).default("AFTER_EXAM"),
 });
 
 type EditExamForm = z.infer<typeof editExamSchema>;
@@ -54,6 +55,7 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
           examDate: exam.examDate || new Date(exam.startTime).toISOString().slice(0, 10),
           endDate: exam.endDate || new Date(exam.endTime).toISOString().slice(0, 10),
           securityCode: "",
+          resultReleaseMode: exam.resultReleaseMode || "AFTER_EXAM",
         });
       } catch (err: any) {
         console.error(err);
@@ -174,6 +176,23 @@ export default function EditExamPage({ params }: { params: Promise<{ id: string 
             error={errors.securityCode?.message}
             {...register("securityCode")}
           />
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Result Release Setting
+            </label>
+            <select
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              {...register("resultReleaseMode")}
+            >
+              <option value="AFTER_EXAM">After Exam Window Ends (Recommended)</option>
+              <option value="IMMEDIATE">Immediate (During Exam upon student submit)</option>
+              <option value="MANUAL">Manual (Admin must click Release Results)</option>
+            </select>
+            <p className="mt-1 text-xs text-slate-500">
+              Controls when students can view their score, review questions, and calculate progress metrics.
+            </p>
+          </div>
 
           <div className="flex justify-end gap-4 pt-4">
             <Button

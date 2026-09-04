@@ -31,6 +31,8 @@ export interface Exam {
   startTime: string;
   endTime: string;
   status: "DRAFT" | "PUBLISHED" | "COMPLETED";
+  resultReleaseMode?: "IMMEDIATE" | "AFTER_EXAM" | "MANUAL";
+  resultsReleased?: boolean;
   createdBy: string;
 }
 
