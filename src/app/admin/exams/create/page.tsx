@@ -30,7 +30,7 @@ const createExamSchema = z.object({
   questions: z.array(questionSchema).min(1, "Add at least one question"),
 });
 
-type CreateExamForm = z.infer<typeof createExamSchema>;
+type CreateExamForm = z.input<typeof createExamSchema>;
 
 export default function CreateExamPage() {
   const router = useRouter();
