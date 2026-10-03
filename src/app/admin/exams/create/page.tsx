@@ -275,7 +275,7 @@ export default function CreateExamPage() {
                     </select>
                   </div>
                   <Input label="Marks" type="number" min="1" {...register(`questions.${index}.marks` as const)} />
-                  <Input label="Negative Marks" type="number" min="0" step="0.25" {...register(`questions.${index}.negativeMarks` as const)} />
+                  <Input label="Negative Marks" type="number" min="0" step="0.01" {...register(`questions.${index}.negativeMarks` as const)} />
                 </div>
               </div>
             ))}
