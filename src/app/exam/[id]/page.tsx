@@ -457,7 +457,7 @@ export default function ExamInterfacePage() {
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-7xl flex-1 items-start gap-8 p-6">
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col lg:flex-row items-start gap-8 p-4 sm:p-6">
         {/* Main Content */}
         <div className="flex-1 rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-100">
           <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
@@ -534,9 +534,9 @@ export default function ExamInterfacePage() {
         </div>
 
         {/* Sidebar Nav */}
-        <div className="w-80 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 hidden lg:block">
+        <div className="w-full lg:w-80 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
           <h3 className="mb-4 text-sm font-semibold text-slate-900">Question Navigator</h3>
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-5 gap-2">
             {questions.map((q, idx) => {
               const isAnswered = answers[q._id] !== undefined;
               const isCurrent = idx === currentQuestionIdx;
